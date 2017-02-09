@@ -36,7 +36,7 @@ COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
 
 RUN usermod -u 1000 www-data
 
-RUN /srv/run
+RUN mkdir /srv/run
 
 RUN chown -Rf www-data:www-data /srv
 
