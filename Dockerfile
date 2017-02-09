@@ -28,9 +28,23 @@ sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" /etc/php/7.0/f
 sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s/;security.limit_extensions = .php .php3 .php4 .php5/security.limit_extensions = .php/g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s|listen = /run/php/php7.0-fpm.sock|listen = 0.0.0.0:9000|g" /etc/php/7.0/fpm/pool.d/www.conf && \
-sed -i -e "s|;listen.mode = 0660|listen.mode = 0660|g" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i -e "s|;listen.mode = 0660|listen.mode = 0660|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+sed -i -e "s|pid = /run/php/php7.0-fpm.pid|pid = /srv/run/php7.0-fpm.pid|g" /etc/php/7.0/fpm/php-fpm.conf && \
+sed -i -e "s|pm = dynamic|pm = ondemand|g" /etc/php/7.0/fpm/php-fpm.conf
 
 COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
+
+RUN usermod -u 1000 www-data
+
+RUN /srv/run
+
+RUN chown -Rf www-data:www-data /srv
+
+RUN chmod 755 /srv
+
+RUN find /srv -type d -exec chmod 755 {} \;
+
+RUN find /srv -type f -exec chmod 644 {} \;
 
 # Port to expose (default: 9000)
 EXPOSE 9000
