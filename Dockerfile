@@ -1,4 +1,5 @@
 FROM jkirkby91/ubuntusrvbase:latest
+
 MAINTAINER James Kirkby <jkirkby91@gmail.com>
 
 # Install packages specific to our project
@@ -25,7 +26,11 @@ sed -i -e "s/pm.start_servers = 2/pm.start_servers = 3/g" /etc/php/7.0/fpm/pool.
 sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" /etc/php/7.0/fpm/pool.d/www.conf && \
-sed -i -e "s/;security.limit_extensions = .php .php3 .php4 .php5/security.limit_extensions = .php/g" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i -e "s/;security.limit_extensions = .php .php3 .php4 .php5/security.limit_extensions = .php/g" /etc/php/7.0/fpm/pool.d/www.conf && \
+sed -i -e "s|listen = /run/php/php7.0-fpm.sock|listen = 0.0.0.0:9000|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+sed -i -e "s|;listen.mode = 0660|listen.mode = 0660|g" /etc/php/7.0/fpm/pool.d/www.conf
+
+COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
 
 # Port to expose (default: 9000)
 EXPOSE 9000
