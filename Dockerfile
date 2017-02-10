@@ -40,7 +40,9 @@ sed -i -e "s|;opcache.revalidate_path=0|opcache.revalidate_path=0|g" /etc/php/7.
 sed -i -e "s|;opcache.fast_shutdown=0|opcache.fast_shutdown=0|g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s|;opcache.max_file_size=0|opcache.max_file_size=10|g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s|;opcache.file_cache=|opcache.file_cache=/data/www/.opcache|g" /etc/php/7.0/fpm/php.ini && \
-sed -i -e "s|;opcache.file_cache_only=0|opcache.file_cache_only=1|g" /etc/php/7.0/fpm/php.ini
+sed -i -e "s|;opcache.file_cache_only=0|opcache.file_cache_only=1|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;php_admin_value[error_log] = /var/log/fpm-php.www.log|php_admin_value[error_log] = /srv/log/fpm-php.www.log|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|error_log = /var/log/php7.0-fpm.log|error_log = /srv/log/php7.0-fpm.log|g" /etc/php/7.0/fpm/php-fpm.conf
 
 RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
 
@@ -50,7 +52,9 @@ RUN mkdir /srv/log && \
 mkdir /srv/run
 
 RUN touch /srv/log/php-fpm-stdout.log && \
-touch /srv/log/php-fpm-stdout.log
+touch /srv/log/php-fpm-stdout.log && \
+touch /srv/log/fpm-php.www.log && \
+touch /srv/log/php7.0-fpm.log
 
 COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
 
