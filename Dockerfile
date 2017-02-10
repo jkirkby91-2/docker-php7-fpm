@@ -5,7 +5,7 @@ MAINTAINER James Kirkby <jkirkby91@gmail.com>
 # Install packages specific to our project
 RUN apt-get update && \
 apt-get upgrade -y && \
-apt-get install php-fpm php-cli php-mysql php-curl php-intl php-mcrypt php-xml php-mbstring php-memcached -y --force-yes --fix-missing && \
+apt-get install php-fpm php-cli php-mysql php-curl php-intl php-mcrypt php-xml php-mbstring php-memcached unzip -y --force-yes --fix-missing && \
 apt-get remove --purge -y software-properties-common build-essential && \
 apt-get autoremove -y && \
 apt-get clean && \
@@ -15,7 +15,6 @@ rm -rf /var/lib/apt/lists/* && \
 rm -rf /usr/share/man/?? && \
 rm -rf /usr/share/man/??_*
 
-# Install composer
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php/7.0/fpm/php.ini && \
@@ -43,32 +42,40 @@ sed -i -e "s|;opcache.max_file_size=0|opcache.max_file_size=10|g" /etc/php/7.0/f
 sed -i -e "s|;opcache.file_cache=|opcache.file_cache=/data/www/.opcache|g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s|;opcache.file_cache_only=0|opcache.file_cache_only=1|g" /etc/php/7.0/fpm/php.ini
 
-RUN touch /srv/log/php-fpm-stdout.log
+WORKDIR /tmp
 
-RUN touch /srv/log/php-fpm-stdout.log
+RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
+
+RUN php -r "if (hash_file('SHA384', 'composer-setup.php') === '92102166af5abdb03f49ce52a40591073a7b859a86e8ff13338cf7db58a19f7844fbc0bb79b2773bf30791e935dbd938') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+
+RUN sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /
+
+RUN mkdir /srv/log && \
+mkdir /srv/run
+
+RUN touch /srv/log/php-fpm-stdout.log && \
+
+touch /srv/log/php-fpm-stdout.log
 
 COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
 
 RUN service php7.0-fpm start
 
-RUN usermod -u 1000 www-data
+RUN usermod -u 1000 www-data && \
+chown -Rf www-data:www-data /srv && \
+chmod 755 /srv
 
-RUN mkdir /srv/run
-
-RUN chown -Rf www-data:www-data /srv
-
-RUN chmod 755 /srv
-
-RUN find /srv -type d -exec chmod 755 {} \;
-
-RUN find /srv -type f -exec chmod 644 {} \;
-
-EXPOSE 9000
+RUN find /srv -type d -exec chmod 755 {} \;  && \
+find /srv -type f -exec chmod 644 {} \;
 
 COPY confs/supervisord/supervisord.conf /etc/supervisord.conf
 
 COPY start.sh /start.sh
 
 RUN chmod 777 /start.sh
+
+EXPOSE 9000
 
 CMD ["/bin/bash", "/start.sh"]
