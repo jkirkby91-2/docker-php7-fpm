@@ -16,7 +16,7 @@ rm -rf /usr/share/man/?? && \
 rm -rf /usr/share/man/??_*
 
 # Install composer
-RUN sed -i -e "s/;cgi.fix_pathinfo=0/cgi.fix_pathinfo=1/g" /etc/php/7.0/fpm/php.ini && \
+RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=1/g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/7.0/fpm/php-fpm.conf && \
@@ -30,9 +30,26 @@ sed -i -e "s/;security.limit_extensions = .php .php3 .php4 .php5/security.limit_
 sed -i -e "s|listen = /run/php/php7.0-fpm.sock|listen = 0.0.0.0:9000|g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s|;listen.mode = 0660|listen.mode = 0660|g" /etc/php/7.0/fpm/pool.d/www.conf && \
 sed -i -e "s|pid = /run/php/php7.0-fpm.pid|pid = /srv/run/php7.0-fpm.pid|g" /etc/php/7.0/fpm/php-fpm.conf && \
-sed -i -e "s|pm = dynamic|pm = ondemand|g" /etc/php/7.0/fpm/php-fpm.conf
+sed -i -e "s|pm = dynamic|pm = ondemand|g" /etc/php/7.0/fpm/php-fpm.conf && \
+sed -i -e "s|;opcache.enable=0|;opcache.enable=1|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.memory_consumption=64|opcache.memory_consumption=64|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.interned_strings_buffer=4|opcache.interned_strings_buffer=8|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.max_accelerated_files=2000|opcache.max_accelerated_files=8000|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.validate_timestamps=1|opcache.validate_timestamps=2|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.revalidate_freq=2|opcache.revalidate_freq=180|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.revalidate_path=0|opcache.revalidate_path=0|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.fast_shutdown=0|opcache.fast_shutdown=0|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.max_file_size=0|opcache.max_file_size=10|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.file_cache=|opcache.file_cache=/data/www/.opcache|g" /etc/php/7.0/fpm/php.ini && \
+sed -i -e "s|;opcache.file_cache_only=0|opcache.file_cache_only=1|g" /etc/php/7.0/fpm/php.ini
+
+RUN touch /srv/log/php-fpm-stdout.log
+
+RUN touch /srv/log/php-fpm-stdout.log
 
 COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
+
+RUN service php7.0-fpm start
 
 RUN usermod -u 1000 www-data
 
@@ -46,15 +63,12 @@ RUN find /srv -type d -exec chmod 755 {} \;
 
 RUN find /srv -type f -exec chmod 644 {} \;
 
-# Port to expose (default: 9000)
 EXPOSE 9000
 
-# Copy supervisor conf
 COPY confs/supervisord/supervisord.conf /etc/supervisord.conf
 
 COPY start.sh /start.sh
 
 RUN chmod 777 /start.sh
 
-# Set entrypoint
 CMD ["/bin/bash", "/start.sh"]
