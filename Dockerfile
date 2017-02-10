@@ -42,15 +42,9 @@ sed -i -e "s|;opcache.max_file_size=0|opcache.max_file_size=10|g" /etc/php/7.0/f
 sed -i -e "s|;opcache.file_cache=|opcache.file_cache=/data/www/.opcache|g" /etc/php/7.0/fpm/php.ini && \
 sed -i -e "s|;opcache.file_cache_only=0|opcache.file_cache_only=1|g" /etc/php/7.0/fpm/php.ini
 
-WORKDIR /tmp
-
 RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
 
-RUN php -r "if (hash_file('SHA384', 'composer-setup.php') === '92102166af5abdb03f49ce52a40591073a7b859a86e8ff13338cf7db58a19f7844fbc0bb79b2773bf30791e935dbd938') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-
 RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-
-WORKDIR /
 
 RUN mkdir /srv/log && \
 mkdir /srv/run
