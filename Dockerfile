@@ -56,7 +56,7 @@ touch /srv/log/php-fpm-stdout.log && \
 touch /srv/log/fpm-php.www.log && \
 touch /srv/log/php7.0-fpm.log
 
-COPY confs/apparmor/phpfpm.conf /etc/apparmor/phpfpm.conf
+COPY confs/apparmor/phpfpm.conf /etc/apparmor.d/phpfpm.conf
 
 RUN service php7.0-fpm start
 
