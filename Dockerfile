@@ -75,4 +75,10 @@ RUN chmod 777 /start.sh
 
 EXPOSE 9000
 
+WORKDIR /srv/www
+
+RUN chown -Rf www-data:www-data /srv/log/*
+
+USER www-data
+
 CMD ["/bin/bash", "/start.sh"]
