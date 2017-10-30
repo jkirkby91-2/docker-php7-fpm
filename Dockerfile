@@ -5,7 +5,7 @@ MAINTAINER James Kirkby <jkirkby91@gmail.com>
 # Install packages specific to our project
 RUN apt-get update && \
 apt-get upgrade -y && \
-apt-get install php-fpm php-cli php-mysql php-curl php-intl php-mcrypt php-xml php-mbstring php-memcached unzip -y --force-yes --fix-missing && \
+apt-get install php-fpm php-cli php-mysql php-sqlite3 php-curl php-intl php-mcrypt php-xml php-mbstring php-memcached unzip -y --force-yes --fix-missing && \
 apt-get remove --purge -y software-properties-common build-essential && \
 apt-get autoremove -y && \
 apt-get clean && \
